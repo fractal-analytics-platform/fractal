@@ -7,7 +7,7 @@ from typing import List
 from typing import Optional
 
 import click
-from devtools import debug
+from devtools import debug  # type: ignore
 from pydantic import BaseModel
 
 
@@ -45,14 +45,9 @@ class Workflow(BaseModel):
 
 
 def db_load():
-    #   try:
     with open("./fractal.json", "r") as f:
         db = json.load(f)
         return db
-
-
-#   except FileNotFoundError:
-#       return dict(projects={}, tasks={}, workflows={}, users={}, groups={})
 
 
 def db_save(db):
@@ -79,14 +74,6 @@ def get_ds_names(project_name):
     prj, ds_names = project_file_load(project_name)
     ds = prj["datasets"]
     return ds_names, ds
-
-
-# def load_project_file(project_name):
-#     project_path, ds_names = get_project(project_name)
-#     pj_file = project_name + ".json"
-#     with open(project_path / pj_file, "r") as f:
-#         prj = json.load(f)
-#     return prj
 
 
 def save_project_file(project_name, prj_dict):
@@ -363,7 +350,6 @@ def apply(filename):
             save_project_file(project_name, prj)
 
     task_names = [t["name"] for t in prj["workflows"][workflow_name]["tasks"]]
-    # debug(task_names)
 
     db = db_load()
     f.update({"tasks": {}})
@@ -371,11 +357,8 @@ def apply(filename):
         dependencies = db["fractal"]["tasks"][task]["depends_on"]
         f["tasks"].update({task: {"dependencies": dependencies}})
 
-    # os.chdir("fractal")
-
     cmd = ["python", os.getcwd() + "/luigi_wrap.py"]
     cmd.extend([json.dumps(f)])
-    # debug(cmd)
 
     process = Popen(cmd, stderr=PIPE)
     stdout, stderr = process.communicate()
