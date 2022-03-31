@@ -1,14 +1,14 @@
 import json
 import os
-from subprocess import Popen, PIPE
 from pathlib import Path
+from subprocess import PIPE
+from subprocess import Popen
 from typing import List
 from typing import Optional
 
 import click
 from devtools import debug
 from pydantic import BaseModel
-
 
 
 """
@@ -35,8 +35,8 @@ from pydantic import BaseModel
 
 class TaskModel(BaseModel):
     name: str
-    depends_on : Optional[str]
-    input_type : str
+    depends_on: Optional[str]
+    input_type: str
     output_type: str
 
 
@@ -45,12 +45,14 @@ class Workflow(BaseModel):
 
 
 def db_load():
- #   try:
+    #   try:
     with open("./fractal.json", "r") as f:
         db = json.load(f)
         return db
- #   except FileNotFoundError:
- #       return dict(projects={}, tasks={}, workflows={}, users={}, groups={})
+
+
+#   except FileNotFoundError:
+#       return dict(projects={}, tasks={}, workflows={}, users={}, groups={})
 
 
 def db_save(db):
@@ -86,6 +88,7 @@ def get_ds_names(project_name):
 #         prj = json.load(f)
 #     return prj
 
+
 def save_project_file(project_name, prj_dict):
     project_path, ds_names = get_project(project_name)
     pj_file = project_name + ".json"
@@ -120,48 +123,53 @@ def project_new(project_name, path, dataset):
         try:
             os.mkdir(path)
         except OSError:
-            print (f"Creation of the directory {path} failed")
+            print(f"Creation of the directory {path} failed")
         else:
-            print (f"Successfully created the directory {path}")
+            print(f"Successfully created the directory {path}")
 
     if not os.path.isfile(os.getcwd() + "/" + "fractal.json"):
         with open(os.getcwd() + "/" + "fractal.json", "w") as f:
             json.dump(
-
-            {
-                "fractal": {
-                "version": "0.1",
-                "projects":{project_name : {"path": path, "datasets": [dataset]}},
-                "tasks" : {},
-                "users" : {},
-                "groups": {}
-                }
-            },
-            f,
+                {
+                    "fractal": {
+                        "version": "0.1",
+                        "projects": {
+                            project_name: {"path": path, "datasets": [dataset]}
+                        },
+                        "tasks": {},
+                        "users": {},
+                        "groups": {},
+                    }
+                },
+                f,
             )
 
     db = db_load()
 
-    db["fractal"]["projects"].update({project_name :
-                                     {"path" : path_obj.resolve().as_posix(),
-                                       "datasets": [dataset],
-                                       "user": "",}
-                                     })
+    db["fractal"]["projects"].update(
+        {
+            project_name: {
+                "path": path_obj.resolve().as_posix(),
+                "datasets": [dataset],
+                "user": "",
+            }
+        }
+    )
 
     pj_file = project_name + ".json"
     if not os.path.isfile(path_obj / pj_file):
         with open(path_obj / pj_file, "w") as f:
             json.dump(
-
-            {
-                "datasets" : { dataset : {
-                                         "resources": [],
-                                         "type": "",
-                                        },
-                              },
-                "workflows" : {},
-            },
-            f,
+                {
+                    "datasets": {
+                        dataset: {
+                            "resources": [],
+                            "type": "",
+                        },
+                    },
+                    "workflows": {},
+                },
+                f,
             )
 
     db_save(db)
@@ -193,11 +201,11 @@ def datasets_list(project_name):
 @click.argument("dataset_name", required=True, nargs=1)
 @click.argument("resources", required=True, nargs=-1)
 @click.argument("ds_type", required=True, nargs=1)
-def dataset_new(project_name, dataset_name,
-                resources,ds_type):
+def dataset_new(project_name, dataset_name, resources, ds_type):
     prj, _ = project_file_load(project_name)
-    prj["datasets"].update({dataset_name : {"resources":resources,
-                                            "type":ds_type} })
+    prj["datasets"].update(
+        {dataset_name: {"resources": resources, "type": ds_type}}
+    )
     db = db_load()
     db["fractal"]["projects"][project_name]["datasets"].append(dataset_name)
     db_save(db)
@@ -261,6 +269,7 @@ def task_add(task_name, input_type, output_type, depends_on=None):
 def workflow():
     pass
 
+
 @workflow.command(name="list")
 @click.argument("project_name", required=True, nargs=1)
 def workflow_list(project_name):
@@ -278,15 +287,21 @@ def workflow_new(project_name, workflow_name, tasks):
     if len(tasks) > 1:
         task_p = db["fractal"]["tasks"][tasks[0]]
         for task_n in db["fractal"]["tasks"][tasks[1:]]:
-            if not check_I_O(task_p,task_n):
+            if not check_I_O(task_p, task_n):
                 raise
             task_p = task_n
 
     prj, _ = project_file_load(project_name)
 
-    prj["workflows"].update({workflow_name : Workflow(
-        tasks=[db["fractal"]["tasks"][task_name] for task_name in tasks],
-    ).dict()})
+    prj["workflows"].update(
+        {
+            workflow_name: Workflow(
+                tasks=[
+                    db["fractal"]["tasks"][task_name] for task_name in tasks
+                ],
+            ).dict()
+        }
+    )
     save_project_file(project_name, prj)
 
 
@@ -303,7 +318,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
         task_p = db["fractal"]["tasks"][tasks[0]]
         for task in tasks[1:]:
             task_n = db["fractal"]["tasks"][task]
-            if not check_I_O(task_p,task_n):
+            if not check_I_O(task_p, task_n):
                 raise
             task_p = task_n
             prj["workflows"][workflow_name]["tasks"].append(task_p)
@@ -312,7 +327,6 @@ def workflow_add_task(project_name, workflow_name, tasks):
     prj["workflows"][workflow_name]["tasks"].append(task)
 
     save_project_file(project_name, prj)
-
 
 
 @cli.command()
@@ -338,31 +352,30 @@ def apply(filename):
     if not any(p in resource_in for p in path_in):
         raise
 
-
     resources_out = [Path(r_out) for r_out in resource_out]
     for i, res_out in enumerate(resources_out):
         if not res_out.exists():
-            res_out= get_project(project_name)[0] / output_dataset[i]
+            res_out = get_project(project_name)[0] / output_dataset[i]
             os.mkdir(res_out)
             prj["datasets"][output_dataset[i]]["resources"].extend(
-                [res_out.resolve().as_posix()])
+                [res_out.resolve().as_posix()]
+            )
             save_project_file(project_name, prj)
 
-
     task_names = [t["name"] for t in prj["workflows"][workflow_name]["tasks"]]
-    #debug(task_names)
+    # debug(task_names)
 
     db = db_load()
-    f.update({"tasks":{}})
+    f.update({"tasks": {}})
     for task in task_names:
         dependencies = db["fractal"]["tasks"][task]["depends_on"]
         f["tasks"].update({task: {"dependencies": dependencies}})
 
-    #os.chdir("fractal")
+    # os.chdir("fractal")
 
-    cmd = ["python", os.getcwd()+"/luigi_wrap.py"]
+    cmd = ["python", os.getcwd() + "/luigi_wrap.py"]
     cmd.extend([json.dumps(f)])
-    #debug(cmd)
+    # debug(cmd)
 
     process = Popen(cmd, stderr=PIPE)
     stdout, stderr = process.communicate()
