@@ -29,7 +29,7 @@ from pydantic import BaseModel
                  type: type
                 },
  "workflows" : [name : {}]
-} 
+}
 """
 
 
@@ -127,11 +127,11 @@ def project_new(project_name, path, dataset):
     if not os.path.isfile(os.getcwd() + "/" + "fractal.json"):
         with open(os.getcwd() + "/" + "fractal.json", "w") as f:
             json.dump(
-                
+
             {
                 "fractal": {
                 "version": "0.1",
-                "projects":{project_name : {"path": path, "datasets": [dataset]}},                        
+                "projects":{project_name : {"path": path, "datasets": [dataset]}},
                 "tasks" : {},
                 "users" : {},
                 "groups": {}
@@ -142,7 +142,7 @@ def project_new(project_name, path, dataset):
 
     db = db_load()
 
-    db["fractal"]["projects"].update({project_name : 
+    db["fractal"]["projects"].update({project_name :
                                      {"path" : path_obj.resolve().as_posix(),
                                        "datasets": [dataset],
                                        "user": "",}
@@ -154,7 +154,7 @@ def project_new(project_name, path, dataset):
             json.dump(
 
             {
-                "datasets" : { dataset : { 
+                "datasets" : { dataset : {
                                          "resources": [],
                                          "type": "",
                                         },
@@ -273,7 +273,7 @@ def workflow_list(project_name):
 @click.argument("workflow_name", required=True, nargs=1)
 @click.argument("tasks", required=True, nargs=-1)
 def workflow_new(project_name, workflow_name, tasks):
-    
+
     db = db_load()
     if len(tasks) > 1:
         task_p = db["fractal"]["tasks"][tasks[0]]
@@ -304,7 +304,7 @@ def workflow_add_task(project_name, workflow_name, tasks):
         for task in tasks[1:]:
             task_n = db["fractal"]["tasks"][task]
             if not check_I_O(task_p,task_n):
-                raise 
+                raise
             task_p = task_n
             prj["workflows"][workflow_name]["tasks"].append(task_p)
 
@@ -331,13 +331,13 @@ def apply(filename):
     resource_out = [r_out for r_out in f["arguments"]["resource_out"]]
 
     prj, _ = project_file_load(project_name)
-    
+
     for in_ds in input_dataset:
         path_in = [p for p in prj["datasets"][in_ds]["resources"]]
         debug(path_in)
     if not any(p in resource_in for p in path_in):
         raise
- 
+
 
     resources_out = [Path(r_out) for r_out in resource_out]
     for i, res_out in enumerate(resources_out):
@@ -357,11 +357,11 @@ def apply(filename):
     for task in task_names:
         dependencies = db["fractal"]["tasks"][task]["depends_on"]
         f["tasks"].update({task: {"dependencies": dependencies}})
-    
+
     #os.chdir("fractal")
 
-    cmd = ["python", os.getcwd()+"/luigi_wrap.py"]        
-    cmd.extend([json.dumps(f)]) 
+    cmd = ["python", os.getcwd()+"/luigi_wrap.py"]
+    cmd.extend([json.dumps(f)])
     #debug(cmd)
 
     process = Popen(cmd, stderr=PIPE)
