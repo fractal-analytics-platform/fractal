@@ -1,11 +1,25 @@
 import glob
 import os
-import sys
 
 from PIL import Image
 
 
-def compress(in_path, start, end, out_path, delete_in):
+def compress(
+    in_path: str,
+    out_path: str,
+    start: int = 0,
+    end: int = -1,
+    delete_in: bool = False,
+) -> None:
+    """
+    Compress tiff files
+
+    :param in_path: directory containing the input files
+    :param out_path: directory containing the output files
+    :param start: index of first file to process
+    :param end: index of last file to process
+    :param delete_in: delete input files, and folder if empty
+    """
 
     if not os.path.exists(out_path):
         os.makedirs(out_path)
@@ -38,11 +52,41 @@ def compress(in_path, start, end, out_path, delete_in):
 
 
 if __name__ == "__main__":
-    in_path = sys.argv[1]
-    out_path = sys.argv[2]
-    delete_in = sys.argv[3]
-    ext = sys.argv[4]
-    start = sys.argv[5]
-    end = sys.argv[6]
+    from argparse import ArgumentParser
 
-    compress(in_path, start, end, out_path, delete_in)
+    parser = ArgumentParser(prog="compression_tif")
+    parser.add_argument("in_path", help="directory containing the input files")
+    parser.add_argument(
+        "out_path", help="directory containing the output files"
+    )
+    parser.add_argument(
+        "-s",
+        "--start-index",
+        type=int,
+        help="index of first file to process (default: 0)",
+        default=0,
+    )
+    parser.add_argument(
+        "-e",
+        "--end-index",
+        type=int,
+        help="index of last file to process (default: -1)",
+        default=-1,
+    )
+    parser.add_argument(
+        "-d",
+        "--delete-input",
+        default=False,
+        action="store_true",
+        help="Delete input files and folder",
+    )
+
+    args = parser.parse_args()
+
+    compress(
+        args.in_path,
+        args.start_index,
+        args.end_index,
+        args.out_path,
+        args.delete_input,
+    )
