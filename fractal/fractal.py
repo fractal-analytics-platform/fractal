@@ -45,17 +45,26 @@ class Workflow(BaseModel):
 
 
 def db_load():
+    """
+    Mocks read from global fractal database
+    """
     with open("./fractal.json", "r") as f:
         db = json.load(f)
         return db
 
 
 def db_save(db):
+    """
+    Mocks writes to the global fractal database
+    """
     with open("./fractal.json", "w") as f:
         json.dump(db, f)
 
 
 def get_project(project_name):
+    """
+    Loads a single project from the mock database
+    """
     db = db_load()
     project_path = Path(db["fractal"]["projects"][project_name]["path"])
     ds_names = db["fractal"]["projects"][project_name]["datasets"]
@@ -63,6 +72,9 @@ def get_project(project_name):
 
 
 def project_file_load(project_name):
+    """
+    Loads a project file
+    """
     project_path, ds_names = get_project(project_name)
     pj_file = project_name + ".json"
     with open(project_path / pj_file, "r") as f:
@@ -71,12 +83,18 @@ def project_file_load(project_name):
 
 
 def get_ds_names(project_name):
+    """
+    Returns datasets information from the project file
+    """
     prj, ds_names = project_file_load(project_name)
     ds = prj["datasets"]
     return ds_names, ds
 
 
 def save_project_file(project_name, prj_dict):
+    """
+    Writes project file
+    """
     project_path, ds_names = get_project(project_name)
     pj_file = project_name + ".json"
     with open(project_path / pj_file, "w") as f:
@@ -84,6 +102,9 @@ def save_project_file(project_name, prj_dict):
 
 
 def check_I_O(task_p, task_n):
+    """
+    Checks compatibility of tasks input/output
+    """
     return task_p["output_type"] == task_n["input_type"]
 
 

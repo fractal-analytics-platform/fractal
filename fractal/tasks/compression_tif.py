@@ -14,11 +14,11 @@ def compress(
     """
     Compress tiff files
 
-    :param in_path: directory containing the input files
-    :param out_path: directory containing the output files
-    :param start: index of first file to process
-    :param end: index of last file to process
-    :param delete_in: delete input files, and folder if empty
+    :param str in_path: directory containing the input files
+    :param str out_path: directory containing the output files
+    :param int start: index of first file to process
+    :param int end: index of last file to process
+    :param bool delete_in: delete input files, and folder if empty
     """
 
     if not os.path.exists(out_path):
