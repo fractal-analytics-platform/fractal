@@ -31,3 +31,6 @@ Sphinx = "^4.5.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+fractal = "fractal.fractal:cli"
