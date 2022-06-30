@@ -5,17 +5,18 @@ University of Zurich
 Original authors:
 Tommaso Comparin <tommaso.comparin@exact-lab.it>
 Marco Franzon <marco.franzon@exact-lab.it>
+Jacopo Nespolo <jacopo.nespolo@exact-lab.it>
 
 This file is part of Fractal and was originally developed by eXact lab S.r.l.
 <exact-lab.it> under contract with Liberali Lab from the Friedrich Miescher
 Institute for Biomedical Research and Pelkmans Lab from the University of
 Zurich.
 """
-
 import itertools
 import os
 
 import parsl
+import pytest
 from parsl.addresses import address_by_hostname
 from parsl.app.app import bash_app
 from parsl.app.app import python_app
@@ -25,6 +26,20 @@ from parsl.data_provider.files import File
 from parsl.executors import HighThroughputExecutor
 from parsl.launchers import SrunLauncher
 from parsl.providers import SlurmProvider
+
+
+try:
+    import tensorflow as tf
+
+    HAS_TENSORFLOW = True
+except ImportError:
+    HAS_TENSORFLOW = False
+
+
+skiif_no_tensorflow_gpu = pytest.mark.skipif(
+    not (HAS_TENSORFLOW and tf.config.list_physical_devices("GPU")),
+    reason="PyTorch could not be imported or GPU not available",
+)
 
 
 def initialize_SlurmProvider():
@@ -276,6 +291,7 @@ def test_import_numpy_slurm():
     AUX_import_numpy(provider, "SlurmProvider")
 
 
+@skiif_no_tensorflow_gpu
 def test_use_tensorflow_on_gpu():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
@@ -306,6 +322,7 @@ def test_use_tensorflow_on_gpu():
     assert two == 2
 
 
+@skiif_no_tensorflow_gpu
 def test_multiexecutor_workflow():
     fmt = "%8i %.12u %.10a %.30j %.8t %.10M %.10l %.4C %.10m %R %E"
     os.environ["SQUEUE_FORMAT"] = fmt
